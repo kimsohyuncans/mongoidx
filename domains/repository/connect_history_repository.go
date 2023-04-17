@@ -7,5 +7,5 @@ import (
 
 type ConnectHistoryRepository interface {
 	AddHistory(ctx context.Context, connectionHistory models.ConnectHistory) error
-	GetHistoryByID(ctx context.Context, ID string) (*models.ConnectHistory, error)
+	ListHistory(ctx context.Context) ([]models.ConnectHistory, error)
 }

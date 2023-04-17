@@ -1,11 +1,11 @@
-package mongodb
+package infrastructure
 
 import (
 	"context"
 	"mongoidx/domains/models"
 	"mongoidx/domains/repository"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -27,18 +27,15 @@ func (r *connectHistoryImpl) AddHistory(ctx context.Context, connectionHistory m
 	return nil
 }
 
-func (r *connectHistoryImpl) GetHistoryByID(ctx context.Context, ID string) (*models.ConnectHistory, error) {
-	var connectHistory models.ConnectHistory
+func (r *connectHistoryImpl) ListHistory(ctx context.Context) ([]models.ConnectHistory, error) {
+	var histories []models.ConnectHistory
 
-	objID, err := primitive.ObjectIDFromHex(ID)
+	res, err := r.db.Collection(r.collectionName).Find(ctx, bson.M{})
 	if err != nil {
 		return nil, err
 	}
 
-	err = r.db.Collection(r.collectionName).FindOne(ctx, primitive.M{"_id": objID}).Decode(&connectHistory)
-	if err != nil {
-		return nil, err
-	}
+	res.All(ctx, &histories)
 
-	return &connectHistory, nil
+	return histories, nil
 }

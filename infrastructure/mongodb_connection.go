@@ -1,10 +1,11 @@
-package mongodb
+package infrastructure
 
 import (
 	"context"
 	"mongoidx/domains/models"
 	"mongoidx/domains/repository"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -30,7 +31,7 @@ func (r *connectionRepoImpl) AddConnection(ctx context.Context, connection model
 func (r *connectionRepoImpl) ListConnection(ctx context.Context) ([]models.Connection, error) {
 	var connections []models.Connection
 
-	cursor, err := r.db.Collection(r.collectionName).Find(ctx, nil)
+	cursor, err := r.db.Collection(r.collectionName).Find(ctx, bson.M{})
 	if err != nil {
 		return nil, err
 	}
