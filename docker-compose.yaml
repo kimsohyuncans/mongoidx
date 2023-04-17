@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   table-service:
-    container_name: app
+    container_name: mongoidx
     build:
       context: .
       dockerfile: Dockerfile.dev
