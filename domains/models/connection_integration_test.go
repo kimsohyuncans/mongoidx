@@ -5,7 +5,9 @@ package models
 import (
 	"context"
 	"log"
+	"math/rand"
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/mongodb/mongo-tools/mongorestore"
@@ -15,7 +17,7 @@ import (
 
 var connection = Connection{
 	ID:  "1",
-	URI: "mongodb://root:example@localhost:27017",
+	URI: "mongodb://root:example@localhost:27017/mflix?authSource=admin",
 }
 
 func TestMain(m *testing.M) {
@@ -53,24 +55,37 @@ func restoreTestData() {
 	}
 }
 
-func simulateRealProductionQuery() {
-	ctx := context.TODO()
-	cursor, err := connection.driver.Database("mflix").Collection("movies").Find(ctx, bson.M{"title": "The Godfather"})
+func simulateRealProductionQuery() error {
+	ctx := context.Background()
+
+	titles, err := connection.driver.Database("mflix").Collection("movies").Distinct(ctx, "title", bson.M{})
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	var movies []map[string]interface{}
-	if err = cursor.All(ctx, &movies); err != nil {
-		log.Fatal(err)
+	genres, err := connection.driver.Database("mflix").Collection("movies").Distinct(ctx, "title", bson.M{})
+	if err != nil {
+		return err
 	}
 
-	for _, movie := range movies {
-		if _, err := connection.driver.Database("mflix").Collection("comments").Find(ctx, bson.M{"movie_id": movie["_id"]}); err != nil {
-			log.Fatal(err)
-		}
+	numRequests := 1000
+	var wg sync.WaitGroup
+
+	// simulate thousand users search a movies with random title and genres
+	for i := 0; i <= numRequests; i++ {
+		title := titles[rand.Intn(len(titles))]
+		genre := genres[rand.Intn(len(genres))]
+		wg.Add(1)
+		go func(searchTitle, searchGenre string) {
+			_, err := connection.driver.Database("mflix").Collection("movies").Find(ctx, bson.M{"title": "The Godfather"})
+			if err != nil {
+				log.Fatal(err)
+			}
+
+		}(title.(string), genre.(string))
 	}
 
+	return nil
 }
 
 func TestEnableProfiling(t *testing.T) {
@@ -78,15 +93,16 @@ func TestEnableProfiling(t *testing.T) {
 	assert.NoError(t, connection.Connect(ctx))
 	assert.NoError(t, connection.Ping(ctx))
 
-	assert.NoError(t, connection.StartProfiling(ctx, "mongoidx"))
+	assert.NoError(t, connection.StartProfiling(ctx, "mflix"))
+	assert.NoError(t, simulateRealProductionQuery())
 
-	profiling, err := connection.Profiling(ctx, "mongoidx")
+	profiling, err := connection.Profiling(ctx, "mflix")
 	assert.Equal(t, true, profiling)
 	assert.NoError(t, err)
 
-	assert.NoError(t, connection.StopProfiling(ctx, "mongoidx"))
+	assert.NoError(t, connection.StopProfiling(ctx, "mflix"))
 
-	profiling, err = connection.Profiling(ctx, "mongoidx")
+	profiling, err = connection.Profiling(ctx, "mflix")
 	assert.Equal(t, false, profiling)
 	assert.NoError(t, err)
 	assert.NoError(t, connection.Disconnect(ctx))

@@ -128,7 +128,7 @@ func (c *Connection) Profiling(ctx context.Context, db string) (bool, error) {
 		Ok      int `bson:"ok"`
 		Profile int `bson:"was"`
 	}
-	err := c.driver.Database(db).RunCommand(ctx, bson.D{{Key: "profile", Value: -1}}).Decode(&result)
+	err := c.driver.Database(db).RunCommand(ctx, bson.D{{Key: "profile", Value: 2}}).Decode(&result)
 	if err != nil {
 		return false, err
 	}
