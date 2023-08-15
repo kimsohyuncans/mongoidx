@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import Button from "@/components/Button";
 import { useState } from "react";
 import dayjs from "dayjs";
+import { useRouter } from "next/navigation";
 
 type FormData = {
   connectionUrl: string;
@@ -29,6 +30,8 @@ export default function Home() {
     setError,
     watch,
   } = useForm<FormData>();
+
+  const router = useRouter()
   const connectionUrl = watch("connectionUrl");
   const [isLoading, setLoading] = useState(false);
   const onSubmit = handleSubmit(() => {
@@ -53,6 +56,7 @@ export default function Home() {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
+      router.push("/dashboard")
     }, 2000);
   });
 
