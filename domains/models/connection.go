@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -9,9 +10,10 @@ import (
 )
 
 type Connection struct {
-	ID     string        `json:"id" bson:"_id,omitempty"`
-	URI    string        `json:"uri" bson:"uri"`
-	driver *mongo.Client `json:"-" bson:"-"`
+	ID          string        `json:"id" bson:"_id,omitempty"`
+	URI         string        `json:"uri" bson:"uri"`
+	ConnectedAt time.Time     `json:"connected_at" bson:"connected_at"`
+	driver      *mongo.Client `json:"-" bson:"-"`
 }
 
 func (c *Connection) Connect(ctx context.Context) error {

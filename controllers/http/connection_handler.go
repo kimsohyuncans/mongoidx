@@ -1,8 +1,6 @@
 package http
 
 import (
-	"log"
-
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -12,7 +10,6 @@ type createConnectionRequestBody struct {
 
 func (httpServer *HttpServer) createConnection(ctx *fiber.Ctx) error {
 	var requestBody createConnectionRequestBody
-
 	if err := ctx.BodyParser(&requestBody); err != nil {
 		return err
 	}
@@ -26,7 +23,6 @@ func (httpServer *HttpServer) createConnection(ctx *fiber.Ctx) error {
 }
 
 func (httpServer *HttpServer) listConnection(ctx *fiber.Ctx) error {
-	log.Println("anjayy")
 	res, err := httpServer.usecase.ListConnection()
 	if err != nil {
 		return err
